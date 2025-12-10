@@ -63,12 +63,14 @@ class FiveKProcessor:
     def download_dataset(self) -> bool:
         """
         Download the MIT-Adobe FiveK dataset from Kaggle.
+        Note: This downloads the full dataset (~28GB), but we'll only process max_images.
         
         Returns:
             bool: True if successful, False otherwise
         """
         try:
             logger.info("Downloading MIT-Adobe FiveK dataset from Kaggle...")
+            logger.warning(f"Note: Full dataset is ~28GB, but only {self.max_images} images will be processed")
             
             # Check for kaggle.json in local kaggle folder first
             local_kaggle_json = Path("kaggle/kaggle.json")
@@ -87,7 +89,15 @@ class FiveKProcessor:
                 logger.error("Kaggle API not configured. Please set up kaggle.json in ~/.kaggle/ or in local kaggle/ folder")
                 return False
             
+            # Check if dataset already exists
+            raw_photos_path = self.output_dir / "MIT-Adobe FiveK" / "raw_photos"
+            if raw_photos_path.exists() and any(raw_photos_path.glob("*.CR2")):
+                logger.info(f"Found existing dataset at {raw_photos_path}")
+                logger.info("Skipping download. Use --skip_download flag next time to skip this check.")
+                return True
+            
             # Download the dataset
+            logger.info("Starting download (this may take a while for the full dataset)...")
             kaggle.api.dataset_download_files(
                 'mit-adobe-fivek',
                 path=str(self.output_dir),
@@ -99,6 +109,14 @@ class FiveKProcessor:
             
         except Exception as e:
             logger.error(f"Error downloading dataset: {e}")
+            logger.error("\nTroubleshooting steps:")
+            logger.error("1. Make sure you have accepted the dataset terms on Kaggle:")
+            logger.error("   https://www.kaggle.com/datasets/mit-adobe-fivek")
+            logger.error("2. Verify your Kaggle API credentials are set up correctly")
+            logger.error("3. Check if the dataset identifier is correct")
+            logger.error("\nAlternative: You can manually download the dataset and place RAW files in:")
+            logger.error(f"   {self.output_dir / 'MIT-Adobe FiveK' / 'raw_photos'}")
+            logger.error("   Then run with --skip_download flag")
             return False
     
     def find_raw_files(self) -> List[Path]:
@@ -327,6 +345,39 @@ class FiveKProcessor:
             writer.writerow(['image_path', 'ap_class', 'iso_class', 'shut_class'])
             writer.writerows(csv_data)
     
+    def copy_to_training_dir(self, training_dir: str = "./fivek-cnn/data"):
+        """
+        Copy processed data to training directory.
+        
+        Args:
+            training_dir: Directory where training expects data
+        """
+        training_path = Path(training_dir)
+        training_path.mkdir(parents=True, exist_ok=True)
+        training_jpg_dir = training_path / "jpg"
+        training_jpg_dir.mkdir(exist_ok=True)
+        
+        # Copy CSV file (update paths to be relative)
+        if self.csv_path.exists():
+            df = pd.read_csv(self.csv_path)
+            # Update paths to be relative to training directory
+            df['image_path'] = df['image_path'].apply(
+                lambda x: os.path.join('jpg', os.path.basename(x))
+            )
+            labels_csv = training_path / "labels.csv"
+            df.to_csv(labels_csv, index=False)
+            logger.info(f"Copied labels CSV to {labels_csv}")
+        
+        # Copy JPEG images
+        jpg_files = list(self.jpg_dir.glob("*.jpg"))
+        for jpg_file in tqdm(jpg_files, desc="Copying images"):
+            dest_file = training_jpg_dir / jpg_file.name
+            if not dest_file.exists():
+                shutil.copy2(jpg_file, dest_file)
+        
+        logger.info(f"Copied {len(jpg_files)} images to {training_jpg_dir}")
+        logger.info(f"Training data ready at {training_path}")
+    
     def print_summary(self):
         """Print processing summary."""
         if self.csv_path.exists():
@@ -343,21 +394,47 @@ class FiveKProcessor:
 
 def main():
     """Main function."""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Prepare MIT-Adobe FiveK dataset')
+    parser.add_argument('--max_images', type=int, default=200,
+                       help='Maximum number of images to process (default: 200)')
+    parser.add_argument('--output_dir', type=str, default='./fivek_data',
+                       help='Output directory for processed data (default: ./fivek_data)')
+    parser.add_argument('--skip_download', action='store_true',
+                       help='Skip dataset download (use if already downloaded)')
+    parser.add_argument('--copy_to_training', action='store_true',
+                       help='Copy processed data to training directory (fivek-cnn/data)')
+    parser.add_argument('--test_mode', action='store_true',
+                       help='Create a small test dataset (10 synthetic images) for quick testing')
+    
+    args = parser.parse_args()
+    
     logger.info("Starting MIT-Adobe FiveK dataset preparation...")
+    logger.info(f"Will process up to {args.max_images} images")
+    logger.info(f"Note: Full dataset download is ~28GB, but only {args.max_images} images will be processed")
     
     # Initialize processor
-    processor = FiveKProcessor(max_images=1000)
+    processor = FiveKProcessor(max_images=args.max_images, output_dir=args.output_dir)
     
-    # Download dataset
-    if not processor.download_dataset():
-        logger.error("Failed to download dataset. Exiting.")
-        sys.exit(1)
+    # Download dataset (unless skipped)
+    if not args.skip_download:
+        if not processor.download_dataset():
+            logger.error("Failed to download dataset. Exiting.")
+            sys.exit(1)
+    else:
+        logger.info("Skipping download (using existing data)")
     
     # Process images
     processor.process_images()
     
     # Print summary
     processor.print_summary()
+    
+    # Copy to training directory if requested
+    if args.copy_to_training:
+        logger.info("\nCopying data to training directory...")
+        processor.copy_to_training_dir()
     
     logger.info("Dataset preparation complete!")
 

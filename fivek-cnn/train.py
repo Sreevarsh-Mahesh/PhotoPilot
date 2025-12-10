@@ -263,7 +263,7 @@ def train_model(csv_file, image_dir, epochs=5, batch_size=32, learning_rate=0.00
     
     # Learning rate scheduler
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.5, patience=2, verbose=True
+        optimizer, mode='min', factor=0.5, patience=2
     )
     
     # Early stopping

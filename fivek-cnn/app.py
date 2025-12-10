@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 # Page configuration
 st.set_page_config(
-    page_title="Camera Assistant AI",
+    page_title="PhotoPilot",
     page_icon="📸",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -208,12 +208,8 @@ class CameraSettingsApp:
             st.markdown(f'<div class="setting-item">', unsafe_allow_html=True)
             st.markdown(f'<h3 style="color: white; margin: 0;">{head.capitalize()}: {result["class_name"]}</h3>', unsafe_allow_html=True)
             
-            # Confidence bar
+            # Display confidence as text only (removed progress bar)
             confidence = result['confidence']
-            st.markdown(f'<div class="confidence-bar">', unsafe_allow_html=True)
-            st.markdown(f'<div class="confidence-fill" style="width: {confidence*100:.1f}%;"></div>', unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-            
             st.markdown(f'<p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0 0 0;">Confidence: {confidence:.1%}</p>', unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
@@ -237,20 +233,22 @@ class CameraSettingsApp:
             
             for i, (class_name, prob) in enumerate(zip(self.class_names[head], probs)):
                 with cols[i]:
+                    # Convert numpy float32 to Python float for Streamlit progress bar
+                    prob_float = float(prob)
                     # Highlight the predicted class
                     if i == result['class']:
                         st.markdown(f"**{class_name}**")
-                        st.progress(prob)
-                        st.markdown(f"**{prob:.1%}**")
+                        st.progress(prob_float)
+                        st.markdown(f"**{prob_float:.1%}**")
                     else:
                         st.markdown(class_name)
-                        st.progress(prob)
-                        st.markdown(f"{prob:.1%}")
+                        st.progress(prob_float)
+                        st.markdown(f"{prob_float:.1%}")
 
 def main():
     """Main Streamlit app."""
     # Header
-    st.markdown('<h1 class="main-header">📸 Camera Assistant AI</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">📸 PhotoPilot</h1>', unsafe_allow_html=True)
     st.markdown('<p style="text-align: center; font-size: 1.2rem; color: #666;">Upload a photo to get optimal camera settings suggestions</p>', unsafe_allow_html=True)
     
     # Initialize app
@@ -370,7 +368,7 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style="text-align: center; color: #666; padding: 1rem;">
-        <p>Camera Assistant AI - Powered by PyTorch & Streamlit</p>
+        <p>PhotoPilot - Powered by PyTorch & Streamlit</p>
         <p>Built with the MIT-Adobe FiveK dataset</p>
     </div>
     """, unsafe_allow_html=True)

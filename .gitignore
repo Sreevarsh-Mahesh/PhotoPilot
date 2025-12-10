@@ -21,10 +21,11 @@ wheels/
 *.egg
 MANIFEST
 
-# PyTorch
-*.pth
+# PyTorch (allow best_model.pth for deployment)
+# *.pth files are tracked by Git LFS
+# checkpoints/best_model.pth is needed for deployment
+checkpoints/checkpoint_epoch_*.pth
 *.pt
-checkpoints/
 models/
 
 # Jupyter Notebook
@@ -82,8 +83,8 @@ logs/
 # Kaggle API (keep the structure but ignore sensitive data)
 kaggle/kaggle.json
 
-# Streamlit
-.streamlit/
+# Streamlit (allow config, ignore secrets)
+.streamlit/secrets.toml
 
 # Model outputs
 outputs/

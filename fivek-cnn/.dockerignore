@@ -1,0 +1,38 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model artifacts (if using external storage)
+# checkpoints/*.pth
+
+# Data (if too large)
+# data/
+# fivek_data/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
