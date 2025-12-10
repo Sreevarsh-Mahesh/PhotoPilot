@@ -376,6 +376,15 @@ def main():
     <div style="text-align: center; color: #666; padding: 1rem;">
         <p>PhotoPilot - Powered by PyTorch & Streamlit</p>
         <p>Built with the MIT-Adobe FiveK dataset</p>
+        <p style="margin-top: 1rem;">Built by <strong>Sreevarsh Mahesh Gandhi</strong></p>
+        <p style="margin-top: 0.5rem;">
+            <a href="https://www.linkedin.com/in/sreevarsh-mahesh-gandhi-53b19024a/" target="_blank" style="color: #667eea; text-decoration: none; margin: 0 10px;">
+                🔗 LinkedIn
+            </a>
+            <a href="https://github.com/Sreevarsh-Mahesh" target="_blank" style="color: #667eea; text-decoration: none; margin: 0 10px;">
+                💻 GitHub
+            </a>
+        </p>
     </div>
     """, unsafe_allow_html=True)
 

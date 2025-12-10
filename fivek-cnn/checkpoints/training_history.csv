@@ -1,0 +1,4 @@
+epoch,train_loss,val_loss,train_acc,val_acc
+1,17.280533885955812,16.150050163269043,"{'aperture': 0.325, 'iso': 0.45, 'shutter': 0.375}","{'aperture': 0.1875, 'iso': 0.375, 'shutter': 0.0}"
+2,28.569585418701173,6.047775983810425,"{'aperture': 0.3, 'iso': 0.45, 'shutter': 0.275}","{'aperture': 0.5625, 'iso': 0.1875, 'shutter': 0.75}"
+3,31.26901321411133,8.416937828063965,"{'aperture': 0.4, 'iso': 0.4, 'shutter': 0.375}","{'aperture': 0.375, 'iso': 0.4375, 'shutter': 0.5625}"
