@@ -106,7 +106,7 @@ class CameraSettingsApp:
         self.class_names = get_class_names()
         self.transform = None
         
-    def load_model(self, model_path="checkpoints/best_model.pth"):
+    def load_model(self, model_path=None):
         """Load the trained model."""
         try:
             if self.model is None:
@@ -115,6 +115,12 @@ class CameraSettingsApp:
                 
                 # Create model
                 self.model, _ = create_model(device=self.device)
+                
+                # Determine model path (handle both local and deployed scenarios)
+                if model_path is None:
+                    # Get the directory where this script is located
+                    script_dir = os.path.dirname(os.path.abspath(__file__))
+                    model_path = os.path.join(script_dir, "checkpoints", "best_model.pth")
                 
                 # Load checkpoint
                 if os.path.exists(model_path):
